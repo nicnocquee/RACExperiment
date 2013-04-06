@@ -1,4 +1,4 @@
-A sample of Login page using [ReactiveCocoa (RAC)](https://github.com/ReactiveCocoa/ReactiveCocoa):
+An experiment of Login page using [ReactiveCocoa (RAC)](https://github.com/ReactiveCocoa/ReactiveCocoa):
 
 1. Form validation.
 2. Sign in button's color adjustment.
