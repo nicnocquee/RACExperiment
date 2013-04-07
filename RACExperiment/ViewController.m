@@ -24,6 +24,7 @@
     [self setupButtonColorRelationship];
     [self setupSignInButtonAction];
     [self setupActivityViewRelationship];
+    [self setupFieldsColor];
     [self setupLoggedIn];
 }
 
@@ -34,6 +35,14 @@
 }
 
 #pragma mark - Setups
+
+- (void)setupFieldsColor {
+    RACSignal *fieldBackgroundColor = [RACAbleWithStart([LoginManager sharedManager], loggingIn) map:^UIColor*(NSNumber *loggingIn) {
+        return (loggingIn.boolValue)?[UIColor lightGrayColor]:[UIColor whiteColor];
+    }];
+    RAC(self.email.backgroundColor) = fieldBackgroundColor;
+    RAC(self.password.backgroundColor) = fieldBackgroundColor;
+}
 
 - (void)setupActivityViewRelationship {
     @weakify(self);
@@ -55,22 +64,36 @@
 }
 
 - (void)setupButtonColorRelationship {
-    RACSignal *fieldTextColor = [RACAbleWithStart(self.signinButton.enabled) map:^UIColor*(NSNumber *enabled) {
+    RACSignal *buttonColor = [RACAbleWithStart(self.signinButton.enabled) map:^UIColor*(NSNumber *enabled) {
         return (enabled.boolValue)?[UIColor blueColor]:[UIColor grayColor];
     }];
-    RAC(self.signinButton.backgroundColor) = fieldTextColor;
+    RAC(self.signinButton.backgroundColor) = buttonColor;
     
     [[self.signinButton rac_signalForControlEvents:UIControlEventTouchDown] subscribeNext:^(id x) {
         self.signinButton.backgroundColor = [UIColor colorWithRed:0.000 green:0.004 blue:0.710 alpha:1.000];
     }];
 }
 
-- (void)setupSignInButtonAction {
-    @weakify(self);
-    
+- (void)setupSignInButtonAction {    
     [[self.signinButton rac_signalForControlEvents:UIControlEventTouchUpInside] subscribeNext:^(id x) {
         [self initiateLogin];
     }];
+}
+
+- (void)setupLoggedIn {
+    [RACAble([LoginManager sharedManager], loggedIn) subscribeNext:^(NSNumber *loggedIn) {
+        if (loggedIn.boolValue) {
+            [self presentSuccess];
+        } else {
+            [self presentError:[[LoginManager sharedManager] error]];
+        }
+    }];
+}
+
+#pragma mark - Actions
+
+- (void)initiateLogin {
+    [[LoginManager sharedManager] loginWithEmail:self.email.text password:self.password.text];
 }
 
 - (void)presentError:(NSError *)error {
@@ -91,20 +114,6 @@
                                           otherButtonTitles: nil];
     [alert show];
     
-}
-
-- (void)setupLoggedIn {
-    [RACAble([LoginManager sharedManager], loggedIn) subscribeNext:^(NSNumber *loggedIn) {
-        if (loggedIn.boolValue) {
-            [self presentSuccess];
-        } else {
-            [self presentError:[[LoginManager sharedManager] error]];
-        }
-    }];
-}
-
-- (void)initiateLogin {
-    [[LoginManager sharedManager] loginWithEmail:self.email.text password:self.password.text];
 }
 
 #pragma mark - Text Field delegate
