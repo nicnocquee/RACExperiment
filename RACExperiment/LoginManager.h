@@ -11,8 +11,12 @@
 @interface LoginManager : NSObject
 
 + (LoginManager *)sharedManager;
-- (id)loginWithEmail:(NSString *)email password:(NSString *)password;
+- (void)loginWithEmail:(NSString *)email password:(NSString *)password;
 
 @property (nonatomic, assign) BOOL loggingIn;
+@property (nonatomic, assign) BOOL loggedIn;
+@property (nonatomic, strong) NSError *error;
+
+
 
 @end

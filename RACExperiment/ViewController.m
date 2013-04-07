@@ -24,6 +24,7 @@
     [self setupButtonColorRelationship];
     [self setupSignInButtonAction];
     [self setupActivityViewRelationship];
+    [self setupLoggedIn];
 }
 
 - (void)didReceiveMemoryWarning
@@ -92,19 +93,18 @@
     
 }
 
-- (void)initiateLogin {
-    @weakify(self);
-    RACSignal *loginSignal = [[LoginManager sharedManager]
-                              loginWithEmail:self.email.text
-                              password:self.password.text
-                              ];
-    [loginSignal subscribeError:^(NSError *error) {
-        @strongify(self);
-        [self presentError:error];
-    } completed:^{
-        @strongify(self);
-        [self presentSuccess];
+- (void)setupLoggedIn {
+    [RACAble([LoginManager sharedManager], loggedIn) subscribeNext:^(NSNumber *loggedIn) {
+        if (loggedIn.boolValue) {
+            [self presentSuccess];
+        } else {
+            [self presentError:[[LoginManager sharedManager] error]];
+        }
     }];
+}
+
+- (void)initiateLogin {
+    [[LoginManager sharedManager] loginWithEmail:self.email.text password:self.password.text];
 }
 
 #pragma mark - Text Field delegate
